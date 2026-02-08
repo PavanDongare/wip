@@ -29,9 +29,15 @@ export default function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const topObserverTarget = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const itemsLengthRef = useRef(0)
+
+  // Update items length ref when items change
+  useEffect(() => {
+    itemsLengthRef.current = items.length
+  }, [items])
 
   // Fetch items - newest first from API, but we'll display with newest at bottom
-  const fetchItems = useCallback(async (reset = true, loadOlder = false) => {
+  const fetchItems = useCallback(async (reset = true) => {
     try {
       if (reset) {
         setIsLoading(true)
@@ -41,7 +47,7 @@ export default function HomePage() {
 
       // For chat view, we fetch from newest to oldest
       // offset is how many items we've already loaded
-      const offset = reset ? 0 : items.length
+      const offset = reset ? 0 : itemsLengthRef.current
       const params = new URLSearchParams({
         limit: '15',
         offset: offset.toString()
@@ -77,7 +83,7 @@ export default function HomePage() {
       setIsLoading(false)
       setIsLoadingMore(false)
     }
-  }, [filterStartDate, filterEndDate, items.length])
+  }, [filterStartDate, filterEndDate])
 
   // Initial fetch
   useEffect(() => {
@@ -109,7 +115,7 @@ export default function HomePage() {
           const container = containerRef.current
           const oldHeight = container?.scrollHeight || 0
 
-          fetchItems(false, true).then(() => {
+          fetchItems(false).then(() => {
             // Restore relative scroll position
             setTimeout(() => {
               if (container) {
