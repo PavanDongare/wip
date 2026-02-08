@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Loader2, ArrowDown, Filter, ChevronDown, Paperclip } from 'lucide-react'
+import { Loader2, ArrowDown, Paperclip } from 'lucide-react'
 import { ChatInput } from '@/components/chat-input'
 import { DoneItemCard } from '@/components/done-item-card'
 import { DateFilter } from '@/components/date-filter'
@@ -267,30 +267,27 @@ export default function HomePage() {
     <div className="flex flex-col h-screen bg-stone-50">
       {/* Header with filters - fixed at top */}
       <header className="flex-shrink-0 border-b-2 border-yellow-400 bg-yellow-50/80 backdrop-blur supports-[backdrop-filter]:bg-yellow-50/60">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
-                WIP <span className="text-3xl">🚧</span>
+        <div className="max-w-2xl mx-auto px-4 py-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-stone-800 flex items-center gap-2">
+                WIP <span className="text-2xl">🚧</span>
               </h1>
-              <p className="text-xs text-stone-500 mt-0.5">What did you ship today?</p>
+              <div className="hidden sm:flex items-center gap-1">
+                <DateFilter onFilterChange={handleFilterChange} />
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
+            {/* Mobile filter toggle */}
+            <button
               onClick={() => setShowFilters(!showFilters)}
-              className={cn(
-                "border-stone-300 text-stone-600 hover:bg-stone-100",
-                showFilters && "bg-stone-200"
-              )}
+              className="sm:hidden text-stone-400 hover:text-stone-600 px-2 py-1"
             >
-              <Filter className="h-4 w-4 mr-1" />
-              Filter
-              <ChevronDown className={cn('h-4 w-4 ml-1 transition-transform', showFilters && 'rotate-180')} />
-            </Button>
+              {showFilters ? '✕' : '⚙️'}
+            </button>
           </div>
+          {/* Mobile filters */}
           {showFilters && (
-            <div className="mt-3 animate-in slide-in-from-top-2">
+            <div className="sm:hidden mt-2 pb-2 animate-in slide-in-from-top-2">
               <DateFilter onFilterChange={handleFilterChange} />
             </div>
           )}

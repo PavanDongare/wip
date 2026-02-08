@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
-import { Calendar, Filter, X } from 'lucide-react'
+import { Calendar, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Popover,
   PopoverContent,
@@ -17,8 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn, formatDateRange } from '@/lib/utils'
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
+import { cn } from '@/lib/utils'
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 
 interface DateFilterProps {
   onFilterChange: (startDate: string | undefined, endDate: string | undefined) => void
@@ -86,64 +85,77 @@ export function DateFilter({ onFilterChange, className }: DateFilterProps) {
   const hasFilter = dateRange?.from
 
   return (
-    <div className={cn('flex items-center gap-2 flex-wrap', className)}>
-      {/* Quick filter dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            {activeFilter !== 'all' && activeFilter !== 'custom' ? (
-              <span className="capitalize">{activeFilter.replace(/([A-Z])/g, ' $1').trim()}</span>
-            ) : (
-              'Filter'
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => handleQuickFilter('today')}>
-            Today
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleQuickFilter('yesterday')}>
-            Yesterday
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleQuickFilter('thisWeek')}>
-            This Week
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleQuickFilter('thisMonth')}>
-            This Month
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleQuickFilter('thisYear')}>
-            This Year
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleQuickFilter('all')}>
-            All Time
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <div className={cn('flex items-center gap-1', className)}>
+      {/* Quick filters - minimal text links */}
+      <button
+        onClick={() => handleQuickFilter('today')}
+        className={cn(
+          "text-xs px-2 py-1 rounded transition-colors",
+          activeFilter === 'today' ? "bg-yellow-200 text-yellow-800" : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+        )}
+      >
+        Today
+      </button>
+      <button
+        onClick={() => handleQuickFilter('thisWeek')}
+        className={cn(
+          "text-xs px-2 py-1 rounded transition-colors",
+          activeFilter === 'thisWeek' ? "bg-yellow-200 text-yellow-800" : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+        )}
+      >
+        Week
+      </button>
+      <button
+        onClick={() => handleQuickFilter('thisMonth')}
+        className={cn(
+          "text-xs px-2 py-1 rounded transition-colors",
+          activeFilter === 'thisMonth' ? "bg-yellow-200 text-yellow-800" : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+        )}
+      >
+        Month
+      </button>
+      <button
+        onClick={() => handleQuickFilter('all')}
+        className={cn(
+          "text-xs px-2 py-1 rounded transition-colors",
+          activeFilter === 'all' ? "bg-yellow-200 text-yellow-800" : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+        )}
+      >
+        All
+      </button>
 
-      {/* Custom date picker */}
+      {/* Custom date picker - minimal */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className={cn(hasFilter && 'bg-accent')}>
-            <Calendar className="h-4 w-4 mr-2" />
-            {hasFilter ? formatDateRange(dateRange) : 'Custom'}
-          </Button>
+          <button
+            className={cn(
+              "text-xs px-2 py-1 rounded flex items-center gap-1 transition-colors",
+              hasFilter || activeFilter === 'custom' ? "bg-yellow-200 text-yellow-800" : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+            )}
+          >
+            <Calendar className="h-3 w-3" />
+            {hasFilter ? `${dateRange.from?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${dateRange.to?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'Range'}
+          </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0 border-stone-200" align="start">
           <CalendarComponent
             mode="range"
             selected={dateRange}
             onSelect={handleCustomDate}
-            numberOfMonths={2}
+            numberOfMonths={1}
+            className="border-stone-200"
           />
         </PopoverContent>
       </Popover>
 
       {/* Clear filter */}
       {hasFilter && (
-        <Button variant="ghost" size="sm" onClick={clearFilter}>
-          <X className="h-4 w-4" />
-        </Button>
+        <button
+          onClick={clearFilter}
+          className="text-xs text-stone-400 hover:text-stone-600 px-1 py-1"
+        >
+          <X className="h-3 w-3" />
+        </button>
       )}
     </div>
   )

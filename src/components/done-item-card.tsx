@@ -60,8 +60,8 @@ export function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCa
         {/* Header with tick and menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
-            {/* Green checkmark - display only */}
-            <span className="text-lg shrink-0 bg-green-100 text-green-700 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">✓</span>
+            {/* Green checkmark emoji */}
+            <span className="text-lg shrink-0">✅</span>
             {item.content && (
               <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
             )}

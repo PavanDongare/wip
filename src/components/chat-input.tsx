@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Paperclip, X } from 'lucide-react'
+import { Send, Camera, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
@@ -22,7 +22,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
   const [content, setContent] = useState('')
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([])
   const [isSending, setIsSending] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Auto-resize textarea
@@ -71,9 +71,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
     setFilePreviews(prev => [...prev, ...newPreviews])
 
     // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
   }
 
   const removeFile = (id: string) => {
@@ -159,21 +157,23 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
 
         {/* Input row */}
         <div className="flex items-end gap-2">
-          {/* Attachment button */}
+          {/* Camera/Gallery button - opens camera, falls back to picker */}
           <Button
             type="button"
             variant="outline"
             size="icon"
             className="h-10 w-10 shrink-0 border-yellow-400 text-yellow-600 hover:bg-yellow-50"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => cameraInputRef.current?.click()}
             disabled={disabled || isSending}
+            title="Add photo"
           >
-            <Paperclip className="h-5 w-5" />
+            <Camera className="h-5 w-5" />
           </Button>
           <input
-            ref={fileInputRef}
+            ref={cameraInputRef}
             type="file"
             accept="image/*,video/*"
+            capture="environment"
             multiple
             className="hidden"
             onChange={handleFileSelect}
@@ -206,11 +206,6 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             <Send className="h-5 w-5" />
           </Button>
         </div>
-
-        {/* Hint */}
-        <p className="text-xs text-stone-400">
-          Press Enter to send • Shift+Enter for new line • Max 50MB per file
-        </p>
       </div>
     </div>
   )
