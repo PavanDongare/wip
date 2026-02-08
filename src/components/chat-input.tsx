@@ -172,9 +172,8 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
           <input
             ref={cameraInputRef}
             type="file"
-            accept="image/*,video/*"
+            accept="image/*"
             capture="environment"
-            multiple
             className="hidden"
             onChange={handleFileSelect}
             disabled={disabled || isSending}
