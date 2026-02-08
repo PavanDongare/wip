@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#FEF08A"/>
+
+  <!-- Text -->
+  <text x="256" y="280" font-family="Arial, sans-serif" font-size="140" font-weight="bold" text-anchor="middle" fill="#44403C">WIP</text>
+
+  <!-- Construction barrier stripes -->
+  <rect x="100" y="320" width="312" height="30" fill="#44403C"/>
+  <rect x="100" y="320" width="30" height="30" fill="#FEF08A"/>
+  <rect x="160" y="320" width="30" height="30" fill="#FEF08A"/>
+  <rect x="220" y="320" width="30" height="30" fill="#FEF08A"/>
+  <rect x="280" y="320" width="30" height="30" fill="#FEF08A"/>
+  <rect x="340" y="320" width="30" height="30" fill="#FEF08A"/>
+  <rect x="400" y="320" width="30" height="30" fill="#FEF08A"/>
+</svg>

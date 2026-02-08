@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Loader2, ArrowDown, Filter, ChevronDown } from 'lucide-react'
+import { Loader2, ArrowDown, Filter, ChevronDown, Paperclip } from 'lucide-react'
 import { ChatInput } from '@/components/chat-input'
 import { DoneItemCard } from '@/components/done-item-card'
 import { DateFilter } from '@/components/date-filter'
@@ -234,9 +234,9 @@ export default function HomePage() {
 
       let key: string
       if (date.toDateString() === today.toDateString()) {
-        key = 'Today'
+        key = 'Today 🚧'
       } else if (date.toDateString() === yesterday.toDateString()) {
-        key = 'Yesterday'
+        key = 'Yesterday 📋'
       } else {
         key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       }
@@ -250,25 +250,33 @@ export default function HomePage() {
 
   // Sort date labels - oldest first
   const dateLabels = Object.keys(groupedItems).sort((a, b) => {
-    if (a === 'Today') return 1
-    if (b === 'Today') return -1
-    if (a === 'Yesterday') return 1
-    if (b === 'Yesterday') return -1
+    if (a.includes('Today')) return 1
+    if (b.includes('Today')) return -1
+    if (a.includes('Yesterday')) return 1
+    if (b.includes('Yesterday')) return -1
     return new Date(a).getTime() - new Date(b).getTime()
   })
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-stone-50">
       {/* Header with filters - fixed at top */}
-      <header className="flex-shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg sm:text-xl font-semibold">WIP - Work In Progress 🚧</h1>
+      <header className="flex-shrink-0 border-b-2 border-yellow-400 bg-yellow-50/80 backdrop-blur supports-[backdrop-filter]:bg-yellow-50/60">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
+                WIP <span className="text-3xl">🚧</span>
+              </h1>
+              <p className="text-xs text-stone-500 mt-0.5">What did you ship today?</p>
+            </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className={cn(showFilters && 'bg-accent')}
+              className={cn(
+                "border-stone-300 text-stone-600 hover:bg-stone-100",
+                showFilters && "bg-stone-200"
+              )}
             >
               <Filter className="h-4 w-4 mr-1" />
               Filter
@@ -276,7 +284,9 @@ export default function HomePage() {
             </Button>
           </div>
           {showFilters && (
-            <DateFilter onFilterChange={handleFilterChange} />
+            <div className="mt-3 animate-in slide-in-from-top-2">
+              <DateFilter onFilterChange={handleFilterChange} />
+            </div>
           )}
         </div>
       </header>
@@ -286,14 +296,14 @@ export default function HomePage() {
         ref={containerRef}
         className="flex-1 overflow-y-auto scroll-smooth"
       >
-        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4">
+        <div className="max-w-2xl mx-auto px-4 py-4">
           {/* Top observer for infinite scroll */}
           <div ref={topObserverTarget} className="h-1" />
 
           {/* Loading more indicator at top */}
           {isLoadingMore && (
             <div className="flex justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <Loader2 className="h-5 w-5 animate-spin text-yellow-600" />
             </div>
           )}
 
@@ -301,32 +311,35 @@ export default function HomePage() {
           {isLoading ? (
             <div className="space-y-4 pt-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-card rounded-lg border p-4 space-y-3">
+                <div key={i} className="bg-white rounded-lg border border-stone-200 p-4 space-y-3 shadow-sm">
                   <div className="flex items-start gap-2">
-                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-5 w-5 rounded-full bg-stone-200" />
                     <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-4 w-full bg-stone-200" />
+                      <Skeleton className="h-4 w-2/3 bg-stone-200" />
                     </div>
                   </div>
-                  <Skeleton className="h-40 w-full rounded-lg" />
-                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-40 w-full rounded-lg bg-stone-200" />
+                  <Skeleton className="h-3 w-20 bg-stone-200" />
                 </div>
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No items yet. What did you get done?</p>
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">📎</div>
+              <h2 className="text-xl font-semibold text-stone-700 mb-2">Let&apos;s get to work</h2>
+              <p className="text-stone-500">Add your first WIP item below!</p>
             </div>
           ) : (
             <>
               {/* Grouped items - oldest to newest */}
               {dateLabels.map(dateLabel => (
                 <div key={dateLabel} className="mb-6">
-                  <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 px-1">
+                  <h2 className="text-xs font-semibold text-stone-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                    <Paperclip className="h-3 w-3" />
                     {dateLabel}
                   </h2>
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="space-y-3">
                     {groupedItems[dateLabel].map(item => (
                       <DoneItemCard
                         key={item.id}
@@ -341,9 +354,9 @@ export default function HomePage() {
 
               {/* End of list indicator */}
               {!hasMore && items.length > 0 && (
-                <p className="text-center text-xs text-muted-foreground py-4">
-                  Beginning of your done items
-                </p>
+                <div className="text-center py-6 border-t border-dashed border-stone-300">
+                  <p className="text-xs text-stone-400">📍 Beginning of your work</p>
+                </div>
               )}
             </>
           )}
@@ -354,7 +367,7 @@ export default function HomePage() {
       </div>
 
       {/* Fixed bottom input */}
-      <div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex-shrink-0 border-t-2 border-yellow-400 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <ChatInput onSend={handleSend} disabled={isLoading} />
       </div>
 
@@ -363,7 +376,7 @@ export default function HomePage() {
         <Button
           onClick={scrollToBottom}
           size="icon"
-          className="fixed bottom-24 right-4 sm:right-8 h-10 w-10 rounded-full shadow-lg z-20"
+          className="fixed bottom-24 right-4 sm:right-6 h-10 w-10 rounded-full bg-yellow-400 hover:bg-yellow-500 text-stone-800 shadow-lg border-2 border-stone-300 z-20"
         >
           <ArrowDown className="h-5 w-5" />
         </Button>

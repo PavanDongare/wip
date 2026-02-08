@@ -120,14 +120,14 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
   }
 
   return (
-    <div className={cn('border-b bg-card', className)}>
-      <div className="max-w-3xl mx-auto p-4 space-y-3">
+    <div className={cn('border-b border-stone-200 bg-white', className)}>
+      <div className="max-w-2xl mx-auto p-4 space-y-3">
         {/* File previews */}
         {filePreviews.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {filePreviews.map(fp => (
               <div key={fp.id} className="relative group">
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted border">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-stone-100 border border-stone-200">
                   {fp.file.type.startsWith('video/') ? (
                     <video
                       src={fp.preview}
@@ -147,7 +147,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600"
                   onClick={() => removeFile(fp.id)}
                 >
                   <X className="h-3 w-3" />
@@ -162,9 +162,9 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
           {/* Attachment button */}
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="h-10 w-10 shrink-0"
+            className="h-10 w-10 shrink-0 border-yellow-400 text-yellow-600 hover:bg-yellow-50"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isSending}
           >
@@ -186,10 +186,10 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="What did you get done?"
+            placeholder="What did you get done? 🚧"
             disabled={disabled || isSending}
             rows={1}
-            className="min-h-[44px] max-h-[200px] resize-none"
+            className="min-h-[44px] max-h-[200px] resize-none border-stone-300 focus:border-yellow-400 focus:ring-yellow-400 bg-stone-50/50"
           />
 
           {/* Send button */}
@@ -198,7 +198,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             size="icon"
             className={cn(
               'h-10 w-10 shrink-0 transition-all',
-              hasContent ? 'opacity-100' : 'opacity-50 pointer-events-none'
+              hasContent ? 'bg-yellow-400 hover:bg-yellow-500 text-stone-800' : 'opacity-50 pointer-events-none bg-stone-200'
             )}
             onClick={handleSend}
             disabled={disabled || isSending}
@@ -208,8 +208,8 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
         </div>
 
         {/* Hint */}
-        <p className="text-xs text-muted-foreground">
-          Press Enter to send, Shift+Enter for new line • Max 50MB per file
+        <p className="text-xs text-stone-400">
+          Press Enter to send • Shift+Enter for new line • Max 50MB per file
         </p>
       </div>
     </div>

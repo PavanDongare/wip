@@ -53,29 +53,32 @@ export function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCa
 
   return (
     <>
-      <div className={cn('bg-card rounded-lg border p-4 space-y-3', className)}>
+      <div className={cn(
+        'bg-white rounded-lg border border-stone-200 p-4 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all',
+        className
+      )}>
         {/* Header with tick and menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
-            {/* Green tick - display only */}
-            <span className="text-green-500 text-xl shrink-0">✅</span>
+            {/* Green checkmark - display only */}
+            <span className="text-lg shrink-0 bg-green-100 text-green-700 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">✓</span>
             {item.content && (
-              <p className="text-sm whitespace-pre-wrap break-words">{item.content}</p>
+              <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
             )}
           </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-stone-100 text-stone-400">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsEditing(true)}>
+            <DropdownMenuContent align="end" className="border-stone-200">
+              <DropdownMenuItem onClick={() => setIsEditing(true)} className="text-stone-600 focus:text-stone-700 focus:bg-stone-50">
                 <Edit2 className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsDeleting(true)} className="text-destructive">
+              <DropdownMenuItem onClick={() => setIsDeleting(true)} className="text-red-500 focus:text-red-600 focus:bg-red-50">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </DropdownMenuItem>
@@ -88,51 +91,61 @@ export function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCa
           <MediaGrid mediaUrls={item.media_urls} />
         )}
 
-        {/* Timestamp */}
-        <div className="text-xs text-muted-foreground">
-          {timeAgo}
+        {/* Timestamp with paperclip */}
+        <div className="text-xs text-stone-400 flex items-center gap-1">
+          📎 {timeAgo}
         </div>
       </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent>
+        <DialogContent className="border-stone-200">
           <DialogHeader>
-            <DialogTitle>Edit item</DialogTitle>
+            <DialogTitle className="text-stone-800">Edit ✏️</DialogTitle>
           </DialogHeader>
           <Textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
             placeholder="What did you get done?"
             rows={4}
-            className="resize-none"
+            className="resize-none border-stone-300 focus:border-yellow-400 focus:ring-yellow-400"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsEditing(false)
-              setEditContent(item.content || '')
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditing(false)
+                setEditContent(item.content || '')
+              }}
+              className="border-stone-300 text-stone-600 hover:bg-stone-50"
+            >
               Cancel
             </Button>
-            <Button onClick={handleEdit}>Save</Button>
+            <Button onClick={handleEdit} className="bg-yellow-400 hover:bg-yellow-500 text-stone-800">
+              Save
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <DialogContent>
+        <DialogContent className="border-stone-200">
           <DialogHeader>
-            <DialogTitle>Delete item?</DialogTitle>
+            <DialogTitle className="text-stone-800">Delete this? 🗑️</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            This action cannot be undone.
+          <p className="text-sm text-stone-500">
+            This can&apos;t be undone. Sure you want to delete?
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleting(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleting(false)}
+              className="border-stone-300 text-stone-600 hover:bg-stone-50"
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button variant="destructive" onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
               Delete
             </Button>
           </DialogFooter>
