@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Loader2, ArrowDown, Paperclip } from 'lucide-react'
 import { ChatInput } from '@/components/chat-input'
 import { DoneItemCard } from '@/components/done-item-card'
@@ -45,8 +45,6 @@ export default function HomePage() {
         setIsLoadingMore(true)
       }
 
-      // For chat view, we fetch from newest to oldest
-      // offset is how many items we've already loaded
       const offset = reset ? 0 : itemsLengthRef.current
       const params = new URLSearchParams({
         limit: '15',
@@ -60,19 +58,14 @@ export default function HomePage() {
       if (!response.ok) throw new Error('Failed to fetch')
 
       const data: DoneItemsResponse = await response.json()
-
-      // Items come sorted newest first from API
-      // We reverse them so oldest is first (at top of list)
       const reversedItems = [...data.items].reverse()
 
       if (reset) {
         setItems(reversedItems)
-        // Scroll to bottom after initial load
         setTimeout(() => {
           bottomRef.current?.scrollIntoView({ behavior: 'instant' })
         }, 100)
       } else {
-        // Prepend older items to the top (before the current items)
         setItems(prev => [...reversedItems, ...prev])
       }
 
@@ -97,7 +90,6 @@ export default function HomePage() {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container
-      // Show scroll button if we're more than 100px from bottom
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100
       setShowScrollToBottom(!isNearBottom)
     }
@@ -111,12 +103,10 @@ export default function HomePage() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
-          // Save current scroll position to maintain it after loading
           const container = containerRef.current
           const oldHeight = container?.scrollHeight || 0
 
           fetchItems(false).then(() => {
-            // Restore relative scroll position
             setTimeout(() => {
               if (container) {
                 const newHeight = container.scrollHeight
@@ -141,95 +131,115 @@ export default function HomePage() {
     }
   }, [hasMore, isLoading, isLoadingMore, fetchItems])
 
-  // Scroll to bottom
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Handle send
-  const handleSend = async (content: string, files: File[]) => {
-    let mediaUrls: string[] = []
+  // Handle send - optimistic: show immediately, remove on failure
+  const handleSend = useCallback((content: string, files: File[], previewUrls: string[]) => {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
-    // Upload files first
-    if (files.length > 0) {
-      const formData = new FormData()
-      files.forEach(file => formData.append('files', file))
-
-      const uploadResponse = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload files')
-      }
-
-      const uploadData = await uploadResponse.json()
-      mediaUrls = uploadData.files.map((f: { url: string }) => f.url)
+    const optimisticItem: DoneItem = {
+      id: tempId,
+      content: content.trim() || null,
+      media_urls: previewUrls.length > 0 ? previewUrls : null,
+      created_at: new Date().toISOString(),
     }
 
-    // Create item
-    const response = await fetch('/api/done-items', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        content: content.trim() || null,
-        mediaUrls
-      })
-    })
+    setItems(prev => [...prev, optimisticItem])
 
-    if (!response.ok) {
-      throw new Error('Failed to create item')
-    }
-
-    const newItem: DoneItem = await response.json()
-
-    // Add to end of list (newest at bottom)
-    setItems(prev => [...prev, newItem])
-
-    // Scroll to bottom to show new item
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, 50)
-  }
 
-  // Handle delete
-  const handleDelete = async (id: string) => {
-    const response = await fetch(`/api/done-items/${id}`, {
-      method: 'DELETE'
+    // Background sync
+    ;(async () => {
+      try {
+        let mediaUrls: string[] = []
+
+        if (files.length > 0) {
+          const formData = new FormData()
+          files.forEach(file => formData.append('files', file))
+          const uploadResponse = await fetch('/api/upload', { method: 'POST', body: formData })
+          if (!uploadResponse.ok) throw new Error('Upload failed')
+          const uploadData = await uploadResponse.json()
+          mediaUrls = uploadData.files.map((f: { url: string }) => f.url)
+        }
+
+        const response = await fetch('/api/done-items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: content.trim() || null, mediaUrls })
+        })
+        if (!response.ok) throw new Error('Create failed')
+
+        const newItem: DoneItem = await response.json()
+        setItems(prev => prev.map(item => item.id === tempId ? newItem : item))
+      } catch (error) {
+        console.error('Failed to sync item:', error)
+        setItems(prev => prev.filter(item => item.id !== tempId))
+      } finally {
+        // Cleanup blob URLs
+        previewUrls.forEach(url => URL.revokeObjectURL(url))
+      }
+    })()
+  }, [])
+
+  // Handle delete - optimistic
+  const handleDelete = useCallback(async (id: string) => {
+    let deletedItem: DoneItem | undefined
+    setItems(prev => {
+      deletedItem = prev.find(item => item.id === id)
+      return prev.filter(item => item.id !== id)
     })
 
-    if (!response.ok) {
-      throw new Error('Failed to delete item')
+    try {
+      const response = await fetch(`/api/done-items/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('Failed to delete')
+    } catch {
+      if (deletedItem) {
+        setItems(prev =>
+          [...prev, deletedItem!].sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          )
+        )
+      }
     }
+  }, [])
 
-    setItems(prev => prev.filter(item => item.id !== id))
-  }
-
-  // Handle update
-  const handleUpdate = async (id: string, content: string) => {
-    const response = await fetch(`/api/done-items/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: content.trim() || null })
+  // Handle update - optimistic
+  const handleUpdate = useCallback(async (id: string, content: string) => {
+    let previousItem: DoneItem | undefined
+    setItems(prev => {
+      previousItem = prev.find(item => item.id === id)
+      return prev.map(item =>
+        item.id === id ? { ...item, content: content.trim() || null } : item
+      )
     })
 
-    if (!response.ok) {
-      throw new Error('Failed to update item')
+    try {
+      const response = await fetch(`/api/done-items/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: content.trim() || null })
+      })
+      if (!response.ok) throw new Error('Failed to update')
+      const updated: DoneItem = await response.json()
+      setItems(prev => prev.map(item => item.id === id ? updated : item))
+    } catch {
+      if (previousItem) {
+        setItems(prev => prev.map(item => item.id === id ? previousItem! : item))
+      }
     }
+  }, [])
 
-    const updated: DoneItem = await response.json()
-    setItems(prev => prev.map(item => item.id === id ? updated : item))
-  }
-
-  // Handle filter change
   const handleFilterChange = (startDate: string | undefined, endDate: string | undefined) => {
     setFilterStartDate(startDate)
     setFilterEndDate(endDate)
   }
 
-  // Group items by date - now with oldest first within each group
-  const groupedItems = (() => {
+  // Group items by date - memoized
+  const groupedItems = useMemo(() => {
     const groups: Record<string, DoneItem[]> = {}
 
     for (const item of items) {
@@ -240,9 +250,9 @@ export default function HomePage() {
 
       let key: string
       if (date.toDateString() === today.toDateString()) {
-        key = 'Today 🚧'
+        key = 'Today \u{1F6A7}'
       } else if (date.toDateString() === yesterday.toDateString()) {
-        key = 'Yesterday 📋'
+        key = 'Yesterday \u{1F4CB}'
       } else {
         key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       }
@@ -252,16 +262,17 @@ export default function HomePage() {
     }
 
     return groups
-  })()
+  }, [items])
 
-  // Sort date labels - oldest first
-  const dateLabels = Object.keys(groupedItems).sort((a, b) => {
-    if (a.includes('Today')) return 1
-    if (b.includes('Today')) return -1
-    if (a.includes('Yesterday')) return 1
-    if (b.includes('Yesterday')) return -1
-    return new Date(a).getTime() - new Date(b).getTime()
-  })
+  const dateLabels = useMemo(() => {
+    return Object.keys(groupedItems).sort((a, b) => {
+      if (a.includes('Today')) return 1
+      if (b.includes('Today')) return -1
+      if (a.includes('Yesterday')) return 1
+      if (b.includes('Yesterday')) return -1
+      return new Date(a).getTime() - new Date(b).getTime()
+    })
+  }, [groupedItems])
 
   return (
     <div className="flex flex-col h-screen bg-stone-50">
@@ -271,7 +282,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-stone-800 flex items-center gap-2">
-                WIP <span className="text-2xl">🚧</span>
+                WIP <span className="text-2xl">{'\u{1F6A7}'}</span>
               </h1>
               <div className="hidden sm:flex items-center gap-1">
                 <DateFilter onFilterChange={handleFilterChange} />
@@ -282,7 +293,7 @@ export default function HomePage() {
               onClick={() => setShowFilters(!showFilters)}
               className="sm:hidden text-stone-400 hover:text-stone-600 px-2 py-1"
             >
-              {showFilters ? '✕' : '⚙️'}
+              {showFilters ? '\u2715' : '\u2699\uFE0F'}
             </button>
           </div>
           {/* Mobile filters */}
@@ -329,7 +340,7 @@ export default function HomePage() {
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-16">
-              <div className="text-6xl mb-4">📎</div>
+              <div className="text-6xl mb-4">{'\u{1F4CE}'}</div>
               <h2 className="text-xl font-semibold text-stone-700 mb-2">Let&apos;s get to work</h2>
               <p className="text-stone-500">Add your first WIP item below!</p>
             </div>
@@ -358,7 +369,7 @@ export default function HomePage() {
               {/* End of list indicator */}
               {!hasMore && items.length > 0 && (
                 <div className="text-center py-6 border-t border-dashed border-stone-300">
-                  <p className="text-xs text-stone-400">📍 Beginning of your work</p>
+                  <p className="text-xs text-stone-400">{'\u{1F4CD}'} Beginning of your work</p>
                 </div>
               )}
             </>

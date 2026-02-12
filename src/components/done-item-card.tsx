@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
+import { useState, memo } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { MoreVertical, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -30,7 +29,7 @@ interface DoneItemCardProps {
   className?: string
 }
 
-export function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCardProps) {
+export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(item.content || '')
   const [isDeleting, setIsDeleting] = useState(false)
@@ -153,4 +152,4 @@ export function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCa
       </Dialog>
     </>
   )
-}
+})

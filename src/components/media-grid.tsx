@@ -16,6 +16,16 @@ interface MediaGridProps {
   className?: string
 }
 
+function MediaImage({ src, alt, width, height, className }: {
+  src: string; alt: string; width: number; height: number; className: string
+}) {
+  if (src.startsWith('blob:')) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={alt} className={className} />
+  }
+  return <Image src={src} alt={alt} width={width} height={height} className={className} />
+}
+
 export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -37,9 +47,16 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
             controls
             className="w-full max-h-96 object-contain"
           />
+        ) : firstItem.startsWith('blob:') ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={firstItem}
+            alt=""
+            className="w-full h-auto object-cover max-h-96"
+          />
         ) : (
           <ExpandedImage src={firstItem} alt="">
-            <Image
+            <MediaImage
               src={firstItem}
               alt=""
               width={600}
@@ -66,9 +83,12 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
                   controls
                   className="w-full h-full object-cover"
                 />
+              ) : url.startsWith('blob:') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <ExpandedImage src={url} alt="">
-                  <Image
+                  <MediaImage
                     src={url}
                     alt=""
                     width={300}
@@ -98,9 +118,12 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
                   controls
                   className="w-full h-full object-cover"
                 />
+              ) : url.startsWith('blob:') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <ExpandedImage src={url} alt="">
-                  <Image
+                  <MediaImage
                     src={url}
                     alt=""
                     width={300}
@@ -130,9 +153,12 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
                 controls
                 className="w-full h-full object-cover"
               />
+            ) : url.startsWith('blob:') ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={url} alt="" className="w-full h-full object-cover" />
             ) : (
               <ExpandedImage src={url} alt="">
-                <Image
+                <MediaImage
                   src={url}
                   alt=""
                   width={300}
@@ -161,13 +187,18 @@ function ExpandedImage({ src, alt, children }: { src: string; alt: string; child
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-none" showCloseButton={true}>
         <DialogTitle className="sr-only">Image preview</DialogTitle>
-        <Image
-          src={src}
-          alt={alt}
-          width={1200}
-          height={800}
-          className="w-full h-auto rounded-lg"
-        />
+        {src.startsWith('blob:') ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={alt} className="w-full h-auto rounded-lg" />
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            width={1200}
+            height={800}
+            className="w-full h-auto rounded-lg"
+          />
+        )}
       </DialogContent>
     </Dialog>
   )

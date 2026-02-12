@@ -13,7 +13,7 @@ interface FilePreview {
 }
 
 interface ChatInputProps {
-  onSend: (content: string, files: File[]) => Promise<void>
+  onSend: (content: string, files: File[], previewUrls: string[]) => void
   disabled?: boolean
   className?: string
 }
@@ -21,7 +21,6 @@ interface ChatInputProps {
 export function ChatInput({ onSend, disabled = false, className }: ChatInputProps) {
   const [content, setContent] = useState('')
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([])
-  const [isSending, setIsSending] = useState(false)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -86,27 +85,21 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
     })
   }
 
-  const handleSend = async () => {
-    if (!hasContent || isSending) return
+  const handleSend = () => {
+    if (!hasContent || disabled) return
 
-    setIsSending(true)
-    const files = filePreviews.map(fp => fp.file)
+    const currentContent = content
+    const currentFiles = filePreviews.map(fp => fp.file)
+    const currentPreviewUrls = filePreviews.map(fp => fp.preview)
 
-    try {
-      await onSend(content, files)
-      // Clear input after successful send
-      setContent('')
-      // Clean up previews
-      filePreviews.forEach(fp => URL.revokeObjectURL(fp.preview))
-      setFilePreviews([])
-      // Focus textarea
-      setTimeout(() => textareaRef.current?.focus(), 100)
-    } catch (error) {
-      console.error('Failed to send:', error)
-      alert('Failed to send. Please try again.')
-    } finally {
-      setIsSending(false)
-    }
+    // Clear input immediately - optimistic
+    setContent('')
+    setFilePreviews([]) // Don't revoke URLs - parent manages blob URL lifecycle
+
+    // Fire and forget - parent handles optimistic UI + background sync
+    onSend(currentContent, currentFiles, currentPreviewUrls)
+
+    setTimeout(() => textareaRef.current?.focus(), 50)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -164,7 +157,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             size="icon"
             className="h-10 w-10 shrink-0 border-yellow-400 text-yellow-600 hover:bg-yellow-50"
             onClick={() => cameraInputRef.current?.click()}
-            disabled={disabled || isSending}
+            disabled={disabled}
             title="Add photo"
           >
             <Camera className="h-5 w-5" />
@@ -176,7 +169,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             capture="environment"
             className="hidden"
             onChange={handleFileSelect}
-            disabled={disabled || isSending}
+            disabled={disabled}
           />
 
           {/* Text input */}
@@ -186,7 +179,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="What did you get done? 🚧"
-            disabled={disabled || isSending}
+            disabled={disabled}
             rows={1}
             className="min-h-[44px] max-h-[200px] resize-none border-stone-300 focus:border-yellow-400 focus:ring-yellow-400 bg-stone-50/50"
           />
@@ -200,7 +193,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
               hasContent ? 'bg-yellow-400 hover:bg-yellow-500 text-stone-800' : 'opacity-50 pointer-events-none bg-stone-200'
             )}
             onClick={handleSend}
-            disabled={disabled || isSending}
+            disabled={disabled}
           >
             <Send className="h-5 w-5" />
           </Button>

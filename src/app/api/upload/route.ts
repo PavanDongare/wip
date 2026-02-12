@@ -12,44 +12,50 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createClient()
-    const uploadResults: Array<{ url: string; path: string; type: string }> = []
-    const errors: Array<{ file: string; error: string }> = []
 
-    for (const file of files) {
-      // Validate file type
-      if (!isValidFileType(file)) {
-        errors.push({ file: file.name, error: 'Invalid file type. Only images and videos are allowed.' })
-        continue
-      }
+    // Upload all files in parallel
+    const results = await Promise.all(
+      files.map(async (file) => {
+        if (!isValidFileType(file)) {
+          return { error: { file: file.name, error: 'Invalid file type. Only images and videos are allowed.' } }
+        }
 
-      // Validate file size
-      if (!isValidFileSize(file)) {
-        errors.push({ file: file.name, error: 'File size exceeds 50MB limit.' })
-        continue
-      }
+        if (!isValidFileSize(file)) {
+          return { error: { file: file.name, error: 'File size exceeds 50MB limit.' } }
+        }
 
-      const filePath = generateFilePath(file.name)
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
+        const filePath = generateFilePath(file.name)
+        const bytes = await file.arrayBuffer()
+        const buffer = Buffer.from(bytes)
 
-      const { data, error } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .upload(filePath, buffer, {
-          contentType: file.type,
-          upsert: false
-        })
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(filePath, buffer, {
+            contentType: file.type,
+            upsert: false
+          })
 
-      if (error) {
-        errors.push({ file: file.name, error: error.message })
-        continue
-      }
+        if (error) {
+          return { error: { file: file.name, error: error.message } }
+        }
 
-      uploadResults.push({
-        url: getPublicUrl(data.path),
-        path: data.path,
-        type: file.type
+        return {
+          result: {
+            url: getPublicUrl(data.path),
+            path: data.path,
+            type: file.type
+          }
+        }
       })
-    }
+    )
+
+    const uploadResults = results
+      .filter((r): r is { result: { url: string; path: string; type: string } } => 'result' in r)
+      .map(r => r.result)
+
+    const errors = results
+      .filter((r): r is { error: { file: string; error: string } } => 'error' in r)
+      .map(r => r.error)
 
     return NextResponse.json({
       files: uploadResults,
