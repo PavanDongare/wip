@@ -150,7 +150,19 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
 
         {/* Input row */}
         <div className="flex items-end gap-2">
-          {/* Camera/Gallery button - opens camera, falls back to picker */}
+          {/* Text input */}
+          <Textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="What did you get done? 🚧"
+            disabled={disabled}
+            rows={1}
+            className="min-h-[44px] max-h-[200px] resize-none border-stone-300 focus:border-yellow-400 focus:ring-yellow-400 bg-stone-50/50"
+          />
+
+          {/* Camera button */}
           <Button
             type="button"
             variant="outline"
@@ -170,18 +182,6 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             className="hidden"
             onChange={handleFileSelect}
             disabled={disabled}
-          />
-
-          {/* Text input */}
-          <Textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="What did you get done? 🚧"
-            disabled={disabled}
-            rows={1}
-            className="min-h-[44px] max-h-[200px] resize-none border-stone-300 focus:border-yellow-400 focus:ring-yellow-400 bg-stone-50/50"
           />
 
           {/* Send button */}
