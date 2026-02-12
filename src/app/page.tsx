@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { Loader2, ArrowDown, Paperclip } from 'lucide-react'
+import { Loader2, Paperclip } from 'lucide-react'
 import { ChatInput } from '@/components/chat-input'
 import { DoneItemCard } from '@/components/done-item-card'
 import { DateFilter } from '@/components/date-filter'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { DoneItem } from '@/lib/supabase/types'
@@ -20,7 +19,6 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filterStartDate, setFilterStartDate] = useState<string>()
   const [filterEndDate, setFilterEndDate] = useState<string>()
@@ -83,21 +81,6 @@ export default function HomePage() {
     fetchItems(true)
   }, [filterStartDate, filterEndDate])
 
-  // Scroll to bottom observer
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100
-      setShowScrollToBottom(!isNearBottom)
-    }
-
-    container.addEventListener('scroll', handleScroll)
-    return () => container.removeEventListener('scroll', handleScroll)
-  }, [])
-
   // Load more when scrolling to top
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -130,10 +113,6 @@ export default function HomePage() {
       }
     }
   }, [hasMore, isLoading, isLoadingMore, fetchItems])
-
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   // Handle send - optimistic: show immediately, remove on failure
   const handleSend = useCallback((content: string, files: File[], previewUrls: string[]) => {
@@ -277,7 +256,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col h-screen bg-stone-50">
       {/* Header with filters - fixed at top */}
-      <header className="flex-shrink-0 border-b-2 border-yellow-400 bg-yellow-50/80 backdrop-blur supports-[backdrop-filter]:bg-yellow-50/60">
+      <header className="flex-shrink-0 border-b-2 border-yellow-400 bg-yellow-300 backdrop-blur supports-[backdrop-filter]:bg-yellow-300/95">
         <div className="max-w-2xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -366,12 +345,6 @@ export default function HomePage() {
                 </div>
               ))}
 
-              {/* End of list indicator */}
-              {!hasMore && items.length > 0 && (
-                <div className="text-center py-6 border-t border-dashed border-stone-300">
-                  <p className="text-xs text-stone-400">{'\u{1F4CD}'} Beginning of your work</p>
-                </div>
-              )}
             </>
           )}
 
@@ -381,20 +354,9 @@ export default function HomePage() {
       </div>
 
       {/* Fixed bottom input */}
-      <div className="flex-shrink-0 border-t-2 border-yellow-400 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      <div className="flex-shrink-0 border-t-2 border-yellow-400 bg-yellow-300 backdrop-blur supports-[backdrop-filter]:bg-yellow-300/95">
         <ChatInput onSend={handleSend} disabled={isLoading} />
       </div>
-
-      {/* Scroll to bottom button */}
-      {showScrollToBottom && (
-        <Button
-          onClick={scrollToBottom}
-          size="icon"
-          className="fixed bottom-24 right-4 sm:right-6 h-10 w-10 rounded-full bg-yellow-400 hover:bg-yellow-500 text-stone-800 shadow-lg border-2 border-stone-300 z-20"
-        >
-          <ArrowDown className="h-5 w-5" />
-        </Button>
-      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-'use client'
+e,'use client'
 
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Loader2 } from 'lucide-react'
@@ -189,13 +189,6 @@ export default function TimelinePage() {
               </div>
             ))}
 
-            {/* Summary */}
-            <div className="mt-8 pt-8 border-t">
-              <p className="text-sm text-muted-foreground text-center">
-                Showing {items.length} {items.length === 1 ? 'item' : 'items'}
-                {filterStartDate || filterEndDate ? ' (filtered)' : ''}
-              </p>
-            </div>
           </>
         )}
       </main>

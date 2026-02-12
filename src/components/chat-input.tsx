@@ -150,24 +150,21 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
 
         {/* Input row */}
         <div className="flex items-end gap-2">
-          {/* Text input */}
           <Textarea
             ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="What did you get done? 🚧"
+            placeholder="What did you get done?"
             disabled={disabled}
             rows={1}
-            className="min-h-[44px] max-h-[200px] resize-none border-stone-300 focus:border-yellow-400 focus:ring-yellow-400 bg-stone-50/50"
+            className="min-h-[44px] max-h-[200px] resize-none rounded-full border-stone-300 focus:border-yellow-400 focus:ring-yellow-400 bg-stone-50/50 px-4"
           />
-
-          {/* Camera button */}
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-10 w-10 shrink-0 border-yellow-400 text-yellow-600 hover:bg-yellow-50"
+            className="h-10 w-10 shrink-0 rounded-full border-yellow-400 text-yellow-600 hover:bg-yellow-50"
             onClick={() => cameraInputRef.current?.click()}
             disabled={disabled}
             title="Add photo"
@@ -183,21 +180,22 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
             onChange={handleFileSelect}
             disabled={disabled}
           />
-
-          {/* Send button */}
-          <Button
-            type="button"
-            size="icon"
-            className={cn(
-              'h-10 w-10 shrink-0 transition-all',
-              hasContent ? 'bg-yellow-400 hover:bg-yellow-500 text-stone-800' : 'opacity-50 pointer-events-none bg-stone-200'
-            )}
-            onClick={handleSend}
-            disabled={disabled}
-          >
-            <Send className="h-5 w-5" />
-          </Button>
         </div>
+
+        {/* Big send button */}
+        <button
+          type="button"
+          onClick={hasContent ? handleSend : () => textareaRef.current?.focus()}
+          disabled={disabled}
+          className={cn(
+            'w-full py-3 rounded-full text-base font-bold tracking-wide transition-all',
+            hasContent
+              ? 'bg-yellow-400 hover:bg-yellow-500 active:scale-[0.98] text-stone-800 border border-stone-800 shadow-md'
+              : 'bg-yellow-300 hover:bg-yellow-400 text-stone-700 border border-stone-800'
+          )}
+        >
+          WIP 🚧
+        </button>
       </div>
     </div>
   )

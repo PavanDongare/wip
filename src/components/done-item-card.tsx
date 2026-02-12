@@ -49,51 +49,70 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
   }
 
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
+  const hasMedia = item.media_urls && item.media_urls.length > 0
+  const multiMedia = item.media_urls && item.media_urls.length > 1
 
   return (
     <>
       <div className={cn(
-        'bg-white rounded-lg border border-stone-200 p-4 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all',
+        'bg-white rounded-2xl border border-stone-200 p-4 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all',
         className
       )}>
-        {/* Header with tick and menu */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
-            {/* Green checkmark emoji */}
-            <span className="text-lg shrink-0">✅</span>
-            {item.content && (
-              <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
-            )}
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-stone-100 text-stone-400">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="border-stone-200">
-              <DropdownMenuItem onClick={() => setIsEditing(true)} className="text-stone-600 focus:text-stone-700 focus:bg-stone-50">
-                <Edit2 className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsDeleting(true)} className="text-red-500 focus:text-red-600 focus:bg-red-50">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Media Grid */}
-        {item.media_urls && item.media_urls.length > 0 && (
-          <MediaGrid mediaUrls={item.media_urls} />
+        {multiMedia ? (
+          /* Multiple images: title on top, scrollable strip below */
+          <>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                <span className="text-lg shrink-0">✅</span>
+                {item.content && (
+                  <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
+                )}
+              </div>
+              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => setIsDeleting(true)} />
+            </div>
+            <MediaGrid mediaUrls={item.media_urls!} />
+            <div className="text-xs text-stone-400 flex items-center gap-1 mt-1">
+              📎 {timeAgo}
+            </div>
+          </>
+        ) : hasMedia ? (
+          /* Single image: image left, content + timestamp right */
+          <>
+            <div className="flex gap-3">
+              <MediaGrid mediaUrls={item.media_urls!} />
+              <div className="flex flex-col justify-between flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-1">
+                  <div className="flex items-start gap-1.5 flex-1 min-w-0">
+                    <span className="text-lg shrink-0 leading-none mt-0.5">✅</span>
+                    {item.content && (
+                      <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
+                    )}
+                  </div>
+                  <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => setIsDeleting(true)} />
+                </div>
+                <div className="text-xs text-stone-400 flex items-center gap-1">
+                  📎 {timeAgo}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Vertical layout for text-only */
+          <>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                <span className="text-lg shrink-0">✅</span>
+                {item.content && (
+                  <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
+                )}
+              </div>
+              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => setIsDeleting(true)} />
+            </div>
+            <div className="text-xs text-stone-400 flex items-center gap-1 mt-2">
+              📎 {timeAgo}
+            </div>
+          </>
         )}
-
-        {/* Timestamp with paperclip */}
-        <div className="text-xs text-stone-400 flex items-center gap-1">
-          📎 {timeAgo}
-        </div>
       </div>
 
       {/* Edit Dialog */}
@@ -153,3 +172,25 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
     </>
   )
 })
+
+function ItemMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-stone-100 text-stone-400">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="border-stone-200">
+        <DropdownMenuItem onClick={onEdit} className="text-stone-600 focus:text-stone-700 focus:bg-stone-50">
+          <Edit2 className="h-4 w-4 mr-2" />
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onDelete} className="text-red-500 focus:text-red-600 focus:bg-red-50">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
