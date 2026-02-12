@@ -69,7 +69,7 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
   // Single image: show as is
   if (isSingle) {
     return (
-      <div className={cn('relative h-40 w-40 shrink-0 rounded-lg overflow-hidden bg-muted', className)}>
+      <div className={cn('relative h-40 w-40 shrink-0 rounded-2xl overflow-hidden bg-muted', className)}>
         <Thumbnail url={mediaUrls[0]} />
       </div>
     )
@@ -81,7 +81,7 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
       {mediaUrls.map((url, index) => (
         <div
           key={index}
-          className="relative h-40 w-40 shrink-0 rounded-lg overflow-hidden bg-muted"
+          className="relative h-40 w-40 shrink-0 rounded-2xl overflow-hidden bg-muted"
         >
           <Thumbnail url={url} />
         </div>
@@ -100,14 +100,14 @@ function ExpandedImage({ src, alt, children }: { src: string; alt: string; child
         <DialogTitle className="sr-only">Image preview</DialogTitle>
         {src.startsWith('blob:') ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="w-full h-auto rounded-lg" />
+          <img src={src} alt={alt} className="w-full h-auto rounded-2xl" />
         ) : (
           <Image
             src={src}
             alt={alt}
             width={1200}
             height={800}
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto rounded-2xl"
           />
         )}
       </DialogContent>
