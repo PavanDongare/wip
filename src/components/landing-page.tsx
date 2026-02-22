@@ -6,20 +6,30 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { verifyPasscode, checkAccess } from '@/app/actions'
 
 export function LandingPage({ onVerified }: { onVerified: () => void }) {
   const [passcode, setPasscode] = useState('')
   const [error, setError] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
 
-  const handleVerify = (e?: React.FormEvent) => {
+  const handleVerify = async (e?: React.FormEvent) => {
     e?.preventDefault()
-    const expectedPasscode = process.env.NEXT_PUBLIC_APP_PASSCODE || '1234'
-    if (passcode === expectedPasscode) {
-      localStorage.setItem('wip_access_token', 'granted')
-      onVerified()
-    } else {
+    setIsVerifying(true)
+    
+    try {
+      const result = await verifyPasscode(passcode)
+      if (result.success) {
+        onVerified()
+      } else {
+        setError(true)
+        setTimeout(() => setError(false), 2000)
+      }
+    } catch (err) {
+      console.error('Verification error:', err)
       setError(true)
-      setTimeout(() => setError(false), 2000)
+    } finally {
+      setIsVerifying(false)
     }
   }
 
@@ -85,6 +95,7 @@ export function LandingPage({ onVerified }: { onVerified: () => void }) {
                 placeholder="Passcode"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
+                disabled={isVerifying}
                 className={cn(
                   "h-12 bg-white border-2 text-center text-xl tracking-[0.5em] font-mono rounded-none",
                   error ? "border-red-500 bg-red-50" : "border-stone-200 focus:border-yellow-400"
@@ -92,9 +103,10 @@ export function LandingPage({ onVerified }: { onVerified: () => void }) {
               />
               <Button 
                 type="submit"
+                disabled={isVerifying}
                 className="w-full h-12 bg-stone-900 text-yellow-300 hover:bg-stone-800 rounded-none font-bold"
               >
-                Unlock
+                {isVerifying ? 'Verifying...' : 'Unlock'}
               </Button>
               {error && <p className="text-red-500 text-xs font-bold">INCORRECT PASSCODE</p>}
             </form>
@@ -113,8 +125,11 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
   const [isVerified, setIsVerified] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const access = localStorage.getItem('wip_access_token')
-    setIsVerified(access === 'granted')
+    async function initAccess() {
+      const hasAccess = await checkAccess()
+      setIsVerified(hasAccess)
+    }
+    initAccess()
   }, [])
 
   if (isVerified === null) return null // Wait for hydration
