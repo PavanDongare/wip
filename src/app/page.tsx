@@ -28,6 +28,7 @@ export default function HomePage() {
   const topObserverTarget = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const itemsLengthRef = useRef(0)
+  const isInitialMount = useRef(true)
 
   // Update items length ref when items change
   useEffect(() => {
@@ -36,13 +37,13 @@ export default function HomePage() {
 
   // Fetch items - newest first from API, but we'll display with newest at bottom
   const fetchItems = useCallback(async (reset = true) => {
-    try {
-      if (reset) {
-        setIsLoading(true)
-      } else {
-        setIsLoadingMore(true)
-      }
+    if (reset) {
+      setIsLoading(true)
+    } else {
+      setIsLoadingMore(true)
+    }
 
+    try {
       const offset = reset ? 0 : itemsLengthRef.current
       const params = new URLSearchParams({
         limit: '15',
@@ -62,6 +63,10 @@ export default function HomePage() {
         setItems(reversedItems)
         setTimeout(() => {
           bottomRef.current?.scrollIntoView({ behavior: 'instant' })
+          // Allow observer to work after initial load and scroll
+          setTimeout(() => {
+            isInitialMount.current = false
+          }, 500)
         }, 100)
       } else {
         setItems(prev => [...reversedItems, ...prev])
@@ -78,14 +83,18 @@ export default function HomePage() {
 
   // Initial fetch
   useEffect(() => {
+    isInitialMount.current = true
     fetchItems(true)
-  }, [filterStartDate, filterEndDate])
+  }, [filterStartDate, filterEndDate, fetchItems])
 
   // Load more when scrolling to top
   useEffect(() => {
+    if (isLoading) return
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+        const target = entries[0]
+        if (target.isIntersecting && hasMore && !isLoading && !isLoadingMore && !isInitialMount.current) {
           const container = containerRef.current
           const oldHeight = container?.scrollHeight || 0
 
@@ -99,7 +108,7 @@ export default function HomePage() {
           })
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, root: containerRef.current }
     )
 
     const currentTarget = topObserverTarget.current
