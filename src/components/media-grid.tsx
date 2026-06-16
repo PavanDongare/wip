@@ -69,7 +69,7 @@ export function MediaGrid({ mediaUrls, className }: MediaGridProps) {
   // Single image: show as is
   if (isSingle) {
     return (
-      <div className={cn('relative h-40 w-40 shrink-0 rounded-2xl overflow-hidden bg-muted', className)}>
+      <div className={cn('relative rounded-2xl overflow-hidden bg-muted', className || 'h-40 w-40 shrink-0')}>
         <Thumbnail url={mediaUrls[0]} />
       </div>
     )

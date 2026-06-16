@@ -55,7 +55,8 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
   return (
     <>
       <div className={cn(
-        'bg-white rounded-2xl border border-stone-200 p-4 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all',
+        'bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all overflow-hidden',
+        hasMedia && !multiMedia ? 'p-0 md:p-4' : 'p-4',
         className
       )}>
         {multiMedia ? (
@@ -76,26 +77,39 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             </div>
           </>
         ) : hasMedia ? (
-          /* Single image: image left, content + timestamp right */
-          <>
-            <div className="flex gap-3">
-              <MediaGrid mediaUrls={item.media_urls!} />
-              <div className="flex flex-col justify-between flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-1">
-                  <div className="flex items-start gap-1.5 flex-1 min-w-0">
-                    <span className="text-lg shrink-0 leading-none mt-0.5">✅</span>
-                    {item.content && (
-                      <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
-                    )}
-                  </div>
-                  <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => setIsDeleting(true)} />
+          /* Single image: overlay on mobile, split on desktop */
+          <div className="relative w-full min-h-[220px] md:min-h-0 flex flex-col justify-end p-4 md:p-0 md:flex-row md:gap-3">
+            {/* The Image (Background on mobile, left thumbnail on desktop) */}
+            <MediaGrid
+              mediaUrls={item.media_urls!}
+              className="absolute inset-0 w-full h-full rounded-none md:relative md:inset-auto md:w-40 md:h-40 md:rounded-2xl md:shrink-0"
+            />
+
+            {/* Gradient scrim for text readability (mobile only) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent md:hidden pointer-events-none" />
+
+            {/* Content area */}
+            <div className="relative z-10 flex flex-col justify-between flex-1 min-w-0 w-full md:relative md:z-auto md:flex-col md:justify-between md:flex-1">
+              <div className="flex items-start justify-between gap-1 w-full">
+                <div className="flex items-start gap-1.5 flex-1 min-w-0">
+                  <span className="text-lg shrink-0 leading-none mt-0.5 md:text-stone-700">✅</span>
+                  {item.content && (
+                    <p className="text-sm font-medium whitespace-pre-wrap break-words leading-relaxed text-white md:text-stone-700 mobile-text-outline">
+                      {item.content}
+                    </p>
+                  )}
                 </div>
-                <div className="text-xs text-stone-400 flex items-center gap-1">
-                  📎 {timeAgo}
-                </div>
+                <ItemMenu 
+                  onEdit={() => setIsEditing(true)} 
+                  onDelete={() => setIsDeleting(true)}
+                  className="text-white hover:bg-white/10 md:text-stone-400 md:hover:bg-stone-100"
+                />
+              </div>
+              <div className="text-xs text-white/80 mt-2 md:text-stone-400 md:mt-0 flex items-center gap-1 mobile-text-shadow">
+                📎 {timeAgo}
               </div>
             </div>
-          </>
+          </div>
         ) : (
           /* Vertical layout for text-only */
           <>
@@ -173,11 +187,11 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
   )
 })
 
-function ItemMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+function ItemMenu({ onEdit, onDelete, className }: { onEdit: () => void; onDelete: () => void; className?: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-stone-100 text-stone-400">
+        <Button variant="ghost" size="icon" className={cn("h-8 w-8 shrink-0 hover:bg-stone-100 text-stone-400", className)}>
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
