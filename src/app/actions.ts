@@ -24,3 +24,12 @@ export async function checkAccess() {
   const cookieStore = await cookies()
   return cookieStore.get('wip_access_token')?.value === 'granted'
 }
+
+export async function isGitHubAuthEnabled() {
+  return !!(
+    process.env.GITHUB_CLIENT_ID &&
+    process.env.GITHUB_CLIENT_SECRET &&
+    process.env.AUTHORIZED_GITHUB_USER
+  )
+}
+
