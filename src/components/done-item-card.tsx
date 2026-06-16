@@ -32,19 +32,11 @@ interface DoneItemCardProps {
 export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdate, className }: DoneItemCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(item.content || '')
-  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleEdit = async () => {
     if (onUpdate) {
       await onUpdate(item.id, editContent)
       setIsEditing(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (onDelete) {
-      await onDelete(item.id)
-      setIsDeleting(false)
     }
   }
 
@@ -69,7 +61,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
                   <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
                 )}
               </div>
-              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => setIsDeleting(true)} />
+              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => onDelete?.(item.id)} />
             </div>
             <MediaGrid mediaUrls={item.media_urls!} />
             <div className="text-xs text-stone-400 flex items-center gap-1 mt-1">
@@ -101,7 +93,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
                 </div>
                 <ItemMenu 
                   onEdit={() => setIsEditing(true)} 
-                  onDelete={() => setIsDeleting(true)}
+                  onDelete={() => onDelete?.(item.id)}
                   className="text-white hover:bg-white/10 md:text-stone-400 md:hover:bg-stone-100"
                 />
               </div>
@@ -120,7 +112,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
                   <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
                 )}
               </div>
-              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => setIsDeleting(true)} />
+              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => onDelete?.(item.id)} />
             </div>
             <div className="text-xs text-stone-400 flex items-center gap-1 mt-2">
               📎 {timeAgo}
@@ -160,29 +152,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <DialogContent className="border-stone-200">
-          <DialogHeader>
-            <DialogTitle className="text-stone-800">Delete this? 🗑️</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-stone-500">
-            This can&apos;t be undone. Sure you want to delete?
-          </p>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleting(false)}
-              className="border-stone-300 text-stone-600 hover:bg-stone-50"
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </>
   )
 })

@@ -8,6 +8,7 @@ import { DateFilter } from '@/components/date-filter'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { DoneItem } from '@/lib/supabase/types'
+import { toast } from 'sonner'
 
 interface DoneItemsResponse {
   items: DoneItem[]
@@ -29,6 +30,17 @@ export default function HomePage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const itemsLengthRef = useRef(0)
   const isInitialMount = useRef(true)
+  const deleteTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({})
+  const deletedItemsCacheRef = useRef<Record<string, DoneItem>>({})
+
+  // Cleanup pending delete timeouts on unmount
+  useEffect(() => {
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const timeouts = deleteTimeoutsRef.current
+      Object.values(timeouts).forEach(clearTimeout)
+    }
+  }, [])
 
   // Update items length ref when items change
   useEffect(() => {
@@ -173,26 +185,78 @@ export default function HomePage() {
     })()
   }, [])
 
-  // Handle delete - optimistic
-  const handleDelete = useCallback(async (id: string) => {
+  // Handle delete - optimistic with undo
+  const handleDelete = useCallback((id: string) => {
     let deletedItem: DoneItem | undefined
+    
     setItems(prev => {
       deletedItem = prev.find(item => item.id === id)
+      if (deletedItem) {
+        deletedItemsCacheRef.current[id] = deletedItem
+      }
       return prev.filter(item => item.id !== id)
     })
 
-    try {
-      const response = await fetch(`/api/done-items/${id}`, { method: 'DELETE' })
-      if (!response.ok) throw new Error('Failed to delete')
-    } catch {
-      if (deletedItem) {
-        setItems(prev =>
-          [...prev, deletedItem!].sort(
-            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          )
-        )
-      }
+    // If there is an existing deletion timeout for this item, clear it first
+    if (deleteTimeoutsRef.current[id]) {
+      clearTimeout(deleteTimeoutsRef.current[id])
     }
+
+    // Set a timeout to perform the permanent deletion after 4 seconds
+    const timeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/done-items/${id}`, { method: 'DELETE' })
+        if (!response.ok) throw new Error('Failed to delete')
+        
+        // Clean up refs on success
+        delete deletedItemsCacheRef.current[id]
+        delete deleteTimeoutsRef.current[id]
+      } catch (error) {
+        console.error('Failed to sync deletion:', error)
+        // Restore the item if the backend request fails
+        const restored = deletedItemsCacheRef.current[id]
+        if (restored) {
+          setItems(prev => {
+            if (prev.some(item => item.id === id)) return prev // Already restored
+            return [...prev, restored].sort(
+              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            )
+          })
+          delete deletedItemsCacheRef.current[id]
+        }
+        delete deleteTimeoutsRef.current[id]
+        toast.error("Failed to delete item")
+      }
+    }, 4000)
+
+    deleteTimeoutsRef.current[id] = timeout
+
+    // Show undo toast notification
+    toast("Item deleted", {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          // Cancel the timeout
+          if (deleteTimeoutsRef.current[id]) {
+            clearTimeout(deleteTimeoutsRef.current[id])
+            delete deleteTimeoutsRef.current[id]
+          }
+          
+          // Restore the item immediately in state
+          const restored = deletedItemsCacheRef.current[id]
+          if (restored) {
+            setItems(prev => {
+              if (prev.some(item => item.id === id)) return prev // Already restored
+              return [...prev, restored].sort(
+                (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+              )
+            })
+            delete deletedItemsCacheRef.current[id]
+          }
+        }
+      },
+      duration: 4000,
+    })
   }, [])
 
   // Handle update - optimistic
