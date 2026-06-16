@@ -47,8 +47,10 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
   return (
     <>
       <div className={cn(
-        'bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all overflow-hidden',
-        hasMedia && !multiMedia ? 'p-0 md:p-4' : 'p-4',
+        hasMedia
+          ? 'bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all overflow-hidden'
+          : 'bg-stone-50/50 border border-stone-200/50 rounded-xl shadow-none hover:border-stone-300 transition-all w-fit max-w-[85%] sm:max-w-[70%]',
+        hasMedia && !multiMedia ? 'p-0 md:p-4' : 'p-3',
         className
       )}>
         {multiMedia ? (
@@ -56,14 +58,14 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
           <>
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2 flex-1 min-w-0">
-                <span className="text-lg shrink-0">✅</span>
+                <span className="text-xl shrink-0 mt-0.5">✅</span>
                 {item.content && (
-                  <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
+                  <p className="text-base md:text-lg font-extrabold tracking-tight text-stone-900 leading-snug whitespace-pre-wrap break-words">{item.content}</p>
                 )}
               </div>
               <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => onDelete?.(item.id)} />
             </div>
-            <MediaGrid mediaUrls={item.media_urls!} />
+            <MediaGrid mediaUrls={item.media_urls!} className="mt-2" />
             <div className="text-xs text-stone-400 flex items-center gap-1 mt-1">
               📎 {timeAgo}
             </div>
@@ -78,15 +80,15 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             />
 
             {/* Gradient scrim for text readability (mobile only) */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent md:hidden pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent md:hidden pointer-events-none" />
 
             {/* Content area */}
             <div className="relative z-10 flex flex-col justify-between flex-1 min-w-0 w-full md:relative md:z-auto md:flex-col md:justify-between md:flex-1">
               <div className="flex items-start justify-between gap-1 w-full">
                 <div className="flex items-start gap-1.5 flex-1 min-w-0">
-                  <span className="text-lg shrink-0 leading-none mt-0.5 md:text-stone-700">✅</span>
+                  <span className="text-xl shrink-0 leading-none mt-0.5 md:text-stone-700">✅</span>
                   {item.content && (
-                    <p className="text-sm font-medium whitespace-pre-wrap break-words leading-relaxed text-white md:text-stone-700 mobile-text-outline">
+                    <p className="text-base md:text-lg font-black tracking-tight leading-snug text-white md:text-stone-900 md:font-extrabold mobile-text-outline">
                       {item.content}
                     </p>
                   )}
@@ -103,18 +105,18 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             </div>
           </div>
         ) : (
-          /* Vertical layout for text-only */
+          /* Vertical layout for text-only (subtle & compact) */
           <>
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-2 flex-1 min-w-0">
-                <span className="text-lg shrink-0">✅</span>
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="flex items-start gap-1.5 flex-1 min-w-0">
+                <span className="text-xs shrink-0 mt-0.5 text-stone-400">✓</span>
                 {item.content && (
-                  <p className="text-sm whitespace-pre-wrap break-words text-stone-700 leading-relaxed">{item.content}</p>
+                  <p className="text-xs md:text-sm font-medium whitespace-pre-wrap break-words text-stone-600 leading-normal">{item.content}</p>
                 )}
               </div>
-              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => onDelete?.(item.id)} />
+              <ItemMenu onEdit={() => setIsEditing(true)} onDelete={() => onDelete?.(item.id)} className="h-6 w-6 text-stone-400 hover:bg-stone-100" />
             </div>
-            <div className="text-xs text-stone-400 flex items-center gap-1 mt-2">
+            <div className="text-[10px] text-stone-400 flex items-center gap-1 mt-1">
               📎 {timeAgo}
             </div>
           </>
