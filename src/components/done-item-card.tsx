@@ -84,9 +84,8 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
 
-            {/* Timing Badge (Top-left corner) */}
             <div className="absolute top-4 left-4 z-20 bg-yellow-300 text-stone-900 border-2 border-stone-900 px-3 py-1 font-mono text-[11px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
-              ⏱️ &lt;1m ago
+              ⏱️ {timeAgo}
             </div>
 
             {/* Actions Menu (Top-right corner, styled as a brutalist button badge) */}
@@ -173,14 +172,21 @@ function ItemMenu({ onEdit, onDelete, className }: { onEdit: () => void; onDelet
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="border-stone-200">
-        <DropdownMenuItem onClick={onEdit} className="text-stone-600 focus:text-stone-700 focus:bg-stone-50">
-          <Edit2 className="h-4 w-4 mr-2" />
-          Edit
+      <DropdownMenuContent
+        align="end"
+        className="border-2 border-stone-900 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)] p-0 min-w-[130px] bg-white"
+      >
+        <DropdownMenuItem
+          onClick={onEdit}
+          className="rounded-none font-mono font-bold text-xs uppercase tracking-wider text-stone-800 focus:bg-yellow-300 focus:text-stone-900 px-3 py-2.5 cursor-pointer border-b border-stone-900"
+        >
+          ✏️ Edit
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onDelete} className="text-red-500 focus:text-red-600 focus:bg-red-50">
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
+        <DropdownMenuItem
+          onClick={onDelete}
+          className="rounded-none font-mono font-bold text-xs uppercase tracking-wider text-red-600 focus:bg-red-500 focus:text-white px-3 py-2.5 cursor-pointer"
+        >
+          🗑 Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

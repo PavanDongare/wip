@@ -32,6 +32,7 @@ export default function HomePage() {
   const isInitialMount = useRef(true)
   const deleteAbortControllersRef = useRef<Record<string, AbortController>>({})
   const deletedItemsCacheRef = useRef<Record<string, DoneItem>>({})
+  const isFetchingMoreRef = useRef(false)
 
   // Cleanup pending abort controllers on unmount
   useEffect(() => {
@@ -106,7 +107,15 @@ export default function HomePage() {
     const observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0]
-        if (target.isIntersecting && hasMore && !isLoading && !isLoadingMore && !isInitialMount.current) {
+        if (
+          target.isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          !isLoadingMore &&
+          !isInitialMount.current &&
+          !isFetchingMoreRef.current
+        ) {
+          isFetchingMoreRef.current = true
           const container = containerRef.current
           const oldHeight = container?.scrollHeight || 0
 
@@ -116,7 +125,10 @@ export default function HomePage() {
                 const newHeight = container.scrollHeight
                 container.scrollTop = container.scrollTop + (newHeight - oldHeight)
               }
+              isFetchingMoreRef.current = false
             }, 50)
+          }).catch(() => {
+            isFetchingMoreRef.current = false
           })
         }
       },
@@ -367,7 +379,7 @@ export default function HomePage() {
   }, [groupedItems])
 
   return (
-    <div className="flex flex-col h-screen bg-stone-50">
+    <div className="flex flex-col h-[100dvh] bg-stone-50">
       {/* Header with filters - fixed at top */}
       <header className="flex-shrink-0 border-b-2 border-yellow-400 bg-yellow-300 backdrop-blur supports-[backdrop-filter]:bg-yellow-300/95">
         <div className="max-w-2xl mx-auto px-4 py-2">
@@ -400,7 +412,7 @@ export default function HomePage() {
       {/* Scrollable content area */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto scroll-smooth"
+        className="flex-1 overflow-y-auto"
       >
         <div className="max-w-2xl mx-auto px-4 py-4">
           {/* Top observer for infinite scroll */}
