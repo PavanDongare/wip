@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Loader2, Paperclip } from 'lucide-react'
-import { ChatInput } from '@/components/chat-input'
+import { FloatingComposer } from '@/components/floating-composer'
 import { DoneItemCard } from '@/components/done-item-card'
 import { DateFilter } from '@/components/date-filter'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
 import type { DoneItem } from '@/lib/supabase/types'
 import { toast } from 'sonner'
 
@@ -414,7 +413,7 @@ export default function HomePage() {
         ref={containerRef}
         className="flex-1 overflow-y-auto"
       >
-        <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="max-w-2xl mx-auto px-4 py-4 pb-28">
           {/* Top observer for infinite scroll */}
           <div ref={topObserverTarget} className="h-1" />
 
@@ -478,10 +477,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Fixed bottom input */}
-      <div className="flex-shrink-0 border-t-2 border-yellow-400 bg-yellow-300 backdrop-blur supports-[backdrop-filter]:bg-yellow-300/95">
-        <ChatInput onSend={handleSend} disabled={isLoading} />
-      </div>
+      {/* Floating Action Button composer */}
+      <FloatingComposer onSend={handleSend} disabled={isLoading} />
     </div>
   )
 }
