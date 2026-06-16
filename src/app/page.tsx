@@ -379,34 +379,27 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-stone-50">
-      {/* Header with filters - fixed at top */}
+      {/* Header – now minimal, content hidden for screen readers */}
       <header className="flex-shrink-0 border-b-2 border-yellow-400 bg-yellow-300 backdrop-blur supports-[backdrop-filter]:bg-yellow-300/95">
-        <div className="max-w-2xl mx-auto px-4 py-2">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-stone-800 flex items-center gap-2">
-                WIP <span className="text-2xl">{'\u{1F6A7}'}</span>
-              </h1>
-              <div className="hidden sm:flex items-center gap-1">
-                <DateFilter onFilterChange={handleFilterChange} />
-              </div>
-            </div>
-            {/* Mobile filter toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="sm:hidden text-stone-400 hover:text-stone-600 px-2 py-1"
-            >
-              {showFilters ? '\u2715' : '\u2699\uFE0F'}
-            </button>
-          </div>
-          {/* Mobile filters */}
-          {showFilters && (
-            <div className="sm:hidden mt-2 pb-2 animate-in slide-in-from-top-2">
-              <DateFilter onFilterChange={handleFilterChange} />
-            </div>
-          )}
-        </div>
+        {/* Visually hidden but accessible title */}
+        <h1 className="sr-only">WIP Dashboard</h1>
       </header>
+
+      {/* Floating toolbar (corner) */}
+      <div className="fixed top-4 left-4 z-30 flex items-center group">
+        {/* Settings (filter) button */}
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="h-8 w-8 flex items-center justify-center bg-yellow-300 text-stone-900 border-2 border-stone-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+          aria-label="Toggle filters"
+        >
+          ⚙️
+        </button>
+        {/* WIP badge appears on hover */}
+        <div className="bg-yellow-300 text-stone-900 border-2 border-stone-900 px-2 py-1 font-black text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          WIP 🚧
+        </div>
+      </div>
 
       {/* Scrollable content area */}
       <div
