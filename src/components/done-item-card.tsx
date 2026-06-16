@@ -48,9 +48,11 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
     <>
       <div className={cn(
         hasMedia
-          ? 'bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all overflow-hidden'
+          ? multiMedia
+            ? 'bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md hover:border-yellow-300/50 transition-all overflow-hidden'
+            : 'bg-white rounded-2xl border-4 border-stone-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all overflow-hidden relative'
           : 'bg-stone-50/50 border border-stone-200/50 rounded-xl shadow-none hover:border-stone-300 transition-all w-fit max-w-[85%] sm:max-w-[70%]',
-        hasMedia && !multiMedia ? 'p-0 md:p-4' : 'p-3',
+        hasMedia && !multiMedia ? 'p-0' : 'p-3',
         className
       )}>
         {multiMedia ? (
@@ -71,36 +73,40 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             </div>
           </>
         ) : hasMedia ? (
-          /* Single image: overlay on mobile, split on desktop */
-          <div className="relative w-full min-h-[220px] md:min-h-0 flex flex-col justify-end p-4 md:p-0 md:flex-row md:gap-3">
-            {/* The Image (Background on mobile, left thumbnail on desktop) */}
+          /* Single image: Quirky Neo-Brutalist Poster Card */
+          <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] min-h-[300px] sm:min-h-[400px] flex flex-col justify-end p-6">
+            {/* The Image (Background on both mobile & desktop) */}
             <MediaGrid
               mediaUrls={item.media_urls!}
-              className="absolute inset-0 w-full h-full rounded-none md:relative md:inset-auto md:w-40 md:h-40 md:rounded-2xl md:shrink-0"
+              className="absolute inset-0 w-full h-full rounded-none"
             />
 
-            {/* Gradient scrim for text readability (mobile only) */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent md:hidden pointer-events-none" />
+            {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
 
-            {/* Content area */}
-            <div className="relative z-10 flex flex-col justify-between flex-1 min-w-0 w-full md:relative md:z-auto md:flex-col md:justify-between md:flex-1">
-              <div className="flex items-start justify-between gap-1 w-full">
-                <div className="flex items-start gap-1.5 flex-1 min-w-0">
-                  <span className="text-xl shrink-0 leading-none mt-0.5 md:text-stone-700">✅</span>
-                  {item.content && (
-                    <p className="text-base md:text-lg font-black tracking-tight leading-snug text-white md:text-stone-900 md:font-extrabold mobile-text-outline">
-                      {item.content}
-                    </p>
-                  )}
-                </div>
-                <ItemMenu 
-                  onEdit={() => setIsEditing(true)} 
-                  onDelete={() => onDelete?.(item.id)}
-                  className="text-white hover:bg-white/10 md:text-stone-400 md:hover:bg-stone-100"
-                />
-              </div>
-              <div className="text-xs text-white/80 mt-2 md:text-stone-400 md:mt-0 flex items-center gap-1 mobile-text-shadow">
-                📎 {timeAgo}
+            {/* Timing Badge (Top-left corner) */}
+            <div className="absolute top-4 left-4 z-20 bg-yellow-300 text-stone-900 border-2 border-stone-900 px-3 py-1 font-mono text-[11px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
+              ⏱️ &lt;1m ago
+            </div>
+
+            {/* Actions Menu (Top-right corner, styled as a brutalist button badge) */}
+            <div className="absolute top-4 right-4 z-20 bg-white border-2 border-stone-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all">
+              <ItemMenu 
+                onEdit={() => setIsEditing(true)} 
+                onDelete={() => onDelete?.(item.id)}
+                className="text-stone-900 hover:bg-stone-100 h-9 w-9 rounded-none animate-in fade-in zoom-in-50 duration-200"
+              />
+            </div>
+
+            {/* Content area at the bottom */}
+            <div className="relative z-10 w-full">
+              {item.content && (
+                <p className="indie-poster-caption whitespace-pre-wrap break-words leading-none">
+                  {item.content}
+                </p>
+              )}
+              <div className="text-[10px] text-white/70 font-mono mt-3 uppercase tracking-wider">
+                Logged {timeAgo}
               </div>
             </div>
           </div>
