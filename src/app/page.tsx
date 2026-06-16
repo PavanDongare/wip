@@ -30,15 +30,15 @@ export default function HomePage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const itemsLengthRef = useRef(0)
   const isInitialMount = useRef(true)
-  const deleteTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({})
+  const deleteAbortControllersRef = useRef<Record<string, AbortController>>({})
   const deletedItemsCacheRef = useRef<Record<string, DoneItem>>({})
 
-  // Cleanup pending delete timeouts on unmount
+  // Cleanup pending abort controllers on unmount
   useEffect(() => {
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      const timeouts = deleteTimeoutsRef.current
-      Object.values(timeouts).forEach(clearTimeout)
+      const controllers = deleteAbortControllersRef.current
+      Object.values(controllers).forEach(c => c.abort())
     }
   }, [])
 
@@ -185,7 +185,7 @@ export default function HomePage() {
     })()
   }, [])
 
-  // Handle delete - optimistic with undo
+  // Handle delete - optimistic with concurrent API call & undo support
   const handleDelete = useCallback((id: string) => {
     let deletedItem: DoneItem | undefined
     
@@ -197,65 +197,105 @@ export default function HomePage() {
       return prev.filter(item => item.id !== id)
     })
 
-    // If there is an existing deletion timeout for this item, clear it first
-    if (deleteTimeoutsRef.current[id]) {
-      clearTimeout(deleteTimeoutsRef.current[id])
+    // Cancel any active delete request for this item first if it exists
+    if (deleteAbortControllersRef.current[id]) {
+      deleteAbortControllersRef.current[id].abort()
     }
 
-    // Set a timeout to perform the permanent deletion after 4 seconds
-    const timeout = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/done-items/${id}`, { method: 'DELETE' })
-        if (!response.ok) throw new Error('Failed to delete')
-        
-        // Clean up refs on success
+    const controller = new AbortController()
+    deleteAbortControllersRef.current[id] = controller
+
+    let deleteRequestCompleted = false
+    let deleteRequestSucceeded = false
+
+    // Fire the DELETE API request immediately
+    fetch(`/api/done-items/${id}`, {
+      method: 'DELETE',
+      signal: controller.signal
+    })
+    .then(async (response) => {
+      deleteRequestCompleted = true
+      if (!response.ok) throw new Error('Failed to delete')
+      deleteRequestSucceeded = true
+      delete deleteAbortControllersRef.current[id]
+    })
+    .catch((error) => {
+      deleteRequestCompleted = true
+      if (error.name === 'AbortError') return // User cancelled it via Undo
+
+      console.error('Failed to sync deletion:', error)
+      delete deleteAbortControllersRef.current[id]
+      
+      // If the delete request failed and the user hasn't clicked Undo, restore the item
+      const restored = deletedItemsCacheRef.current[id]
+      if (restored) {
+        setItems(prev => {
+          if (prev.some(item => item.id === id)) return prev
+          return [...prev, restored].sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          )
+        })
         delete deletedItemsCacheRef.current[id]
-        delete deleteTimeoutsRef.current[id]
-      } catch (error) {
-        console.error('Failed to sync deletion:', error)
-        // Restore the item if the backend request fails
-        const restored = deletedItemsCacheRef.current[id]
-        if (restored) {
-          setItems(prev => {
-            if (prev.some(item => item.id === id)) return prev // Already restored
-            return [...prev, restored].sort(
-              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-            )
-          })
-          delete deletedItemsCacheRef.current[id]
-        }
-        delete deleteTimeoutsRef.current[id]
         toast.error("Failed to delete item")
       }
-    }, 4000)
-
-    deleteTimeoutsRef.current[id] = timeout
+    })
 
     // Show undo toast notification
     toast("Item deleted", {
       action: {
         label: "Undo",
-        onClick: () => {
-          // Cancel the timeout
-          if (deleteTimeoutsRef.current[id]) {
-            clearTimeout(deleteTimeoutsRef.current[id])
-            delete deleteTimeoutsRef.current[id]
+        onClick: async () => {
+          // 1. Abort the in-flight delete request if it is still running
+          const activeController = deleteAbortControllersRef.current[id]
+          if (activeController) {
+            activeController.abort()
+            delete deleteAbortControllersRef.current[id]
           }
-          
-          // Restore the item immediately in state
-          const restored = deletedItemsCacheRef.current[id]
-          if (restored) {
+
+          // 2. Restore in state immediately
+          const restoredItem = deletedItemsCacheRef.current[id]
+          if (restoredItem) {
             setItems(prev => {
-              if (prev.some(item => item.id === id)) return prev // Already restored
-              return [...prev, restored].sort(
+              if (prev.some(item => item.id === id)) return prev
+              return [...prev, restoredItem].sort(
                 (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
               )
             })
-            delete deletedItemsCacheRef.current[id]
           }
+
+          // 3. If the delete request had already completed successfully, we POST the item back to recreate it
+          if (deleteRequestCompleted && deleteRequestSucceeded && restoredItem) {
+            try {
+              const response = await fetch('/api/done-items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  content: restoredItem.content,
+                  mediaUrls: restoredItem.media_urls || []
+                })
+              })
+
+              if (!response.ok) throw new Error('Failed to restore')
+              
+              const newItem: DoneItem = await response.json()
+              // Update state with the newly created database item ID
+              setItems(prev => prev.map(item => item.id === id ? newItem : item))
+              toast.success("Item restored")
+            } catch (err) {
+              console.error('Failed to restore item in database:', err)
+              toast.error("Failed to restore item on server")
+              // Since restoration on the server failed, remove the item from state
+              setItems(prev => prev.filter(item => item.id !== id))
+            }
+          } else {
+            toast.success("Item restored")
+          }
+
+          // Clean up cache
+          delete deletedItemsCacheRef.current[id]
         }
       },
-      duration: 4000,
+      duration: 5000,
     })
   }, [])
 
