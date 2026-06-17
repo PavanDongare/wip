@@ -90,24 +90,20 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
 
-            <div className="absolute top-4 left-4 z-20 w-[92px] rotate-[-3deg] border-4 border-stone-900 bg-white text-stone-900 shadow-[6px_6px_0px_rgba(0,0,0,1)]">
-              <div className="flex h-5 items-center justify-center border-b-4 border-stone-900 bg-yellow-300">
-                <div className="h-3 w-3 rounded-full border-2 border-stone-900 bg-white" />
-              </div>
-              <div className="relative px-2 pb-2 pt-1 text-center">
-                <div className="font-mono text-[9px] font-black uppercase leading-none tracking-widest">
+            <div className="paper-date-note absolute left-4 top-4 z-20 w-[94px] rotate-[-3deg] px-2.5 pb-2 pt-3 text-center">
+              <div className="relative z-10">
+                <div className="paper-date-weekday">
                   {photoWeekday}
                 </div>
-                <div className="mt-1 font-mono text-[25px] font-black leading-none tracking-tight">
+                <div className="paper-date-day mt-1">
                   {photoDay}
                 </div>
-                <div className="mt-0.5 font-mono text-[10px] font-black uppercase leading-none tracking-wider">
+                <div className="paper-date-meta mt-1 uppercase">
                   {photoMonthYear}
                 </div>
-                <div className="mt-1 border-t-2 border-stone-900 pt-1 font-mono text-[9px] font-black uppercase leading-none tracking-tight">
+                <div className="paper-date-time mt-1.5 pt-1 uppercase">
                   {photoTime}
                 </div>
-                <div className="absolute bottom-0 right-0 h-4 w-4 border-l-2 border-t-2 border-stone-900 bg-yellow-100 shadow-[-1px_-1px_0px_rgba(0,0,0,0.15)]" />
               </div>
             </div>
 

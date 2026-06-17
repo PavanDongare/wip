@@ -31,10 +31,17 @@ function formatCapturedAt(capturedAt?: string) {
   if (!capturedAt) return null
   const date = new Date(capturedAt)
   if (Number.isNaN(date.getTime())) return null
-  return format(date, 'EEE do MMM yy · h:mm a').toUpperCase()
+  return {
+    weekday: format(date, 'EEE').toUpperCase(),
+    day: format(date, 'do'),
+    monthYear: format(date, 'MMM yy').toUpperCase(),
+    time: format(date, 'h:mm a'),
+  }
 }
 
-function Thumbnail({ url, overlayLabel }: { url: string; overlayLabel?: string | null }) {
+type CapturedLabel = ReturnType<typeof formatCapturedAt>
+
+function Thumbnail({ url, overlayLabel }: { url: string; overlayLabel?: CapturedLabel }) {
   const video = isVideoUrl(url)
   const isBlob = url.startsWith('blob:')
 
@@ -108,7 +115,7 @@ function ExpandedImage({
   src: string
   alt: string
   children: React.ReactNode
-  overlayLabel?: string | null
+  overlayLabel?: CapturedLabel
 }) {
   return (
     <Dialog>
@@ -116,7 +123,7 @@ function ExpandedImage({
         {children}
       </DialogTrigger>
       <DialogContent
-        className="!fixed !inset-0 !left-0 !top-0 !z-50 grid h-[100dvh] w-[100dvw] max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 bg-stone-950/95 p-0 shadow-none"
+        className="!fixed !inset-0 !left-0 !top-0 !z-50 grid !h-[100dvh] !w-[100dvw] !max-w-none !translate-x-0 !translate-y-0 gap-0 rounded-none border-0 bg-stone-950/95 p-0 shadow-none"
         showCloseButton={true}
       >
         <DialogTitle className="sr-only">Image preview</DialogTitle>
@@ -124,26 +131,37 @@ function ExpandedImage({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_55%)]" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-          <div className="relative z-10 w-full max-w-6xl px-4 py-6 md:px-10 md:py-10">
-            <div className="relative overflow-hidden rounded-[1.25rem] border-4 border-stone-900 bg-black shadow-[12px_12px_0px_rgba(0,0,0,0.75)]">
+          <div className="relative z-10 flex h-full w-full items-center justify-center px-0 py-0 md:px-6 md:py-6">
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black md:border-4 md:border-stone-900 md:shadow-[12px_12px_0px_rgba(0,0,0,0.75)]">
               {overlayLabel && (
-                <div className="absolute left-4 top-4 z-20 max-w-[calc(100%-2rem)] rotate-[-2deg] border-4 border-stone-900 bg-white px-3 py-2 font-mono text-[10px] font-black uppercase tracking-wider text-stone-900 shadow-[5px_5px_0px_rgba(0,0,0,1)]">
-                  <div className="absolute -top-2 left-6 h-4 w-4 rounded-full border-2 border-stone-900 bg-yellow-300" />
-                  {overlayLabel}
-                  <div className="absolute bottom-0 right-0 h-3 w-3 border-l-2 border-t-2 border-stone-900 bg-yellow-100" />
+                <div className="paper-date-note absolute left-4 top-4 z-20 w-[104px] rotate-[-3deg] px-2.5 pb-2 pt-3 text-center md:left-8 md:top-8">
+                  <div className="relative z-10">
+                    <div className="paper-date-weekday">
+                      {overlayLabel.weekday}
+                    </div>
+                    <div className="paper-date-day mt-1">
+                      {overlayLabel.day}
+                    </div>
+                    <div className="paper-date-meta mt-1 uppercase">
+                      {overlayLabel.monthYear}
+                    </div>
+                    <div className="paper-date-time mt-1.5 pt-1 uppercase">
+                      {overlayLabel.time}
+                    </div>
+                  </div>
                 </div>
               )}
 
               {src.startsWith('blob:') ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={src} alt={alt} className="max-h-[84dvh] w-full object-contain bg-black" />
+                <img src={src} alt={alt} className="h-full w-full object-contain bg-black" />
               ) : (
                 <Image
                   src={src}
                   alt={alt}
                   width={1600}
                   height={1200}
-                  className="max-h-[84dvh] w-full object-contain bg-black"
+                  className="h-full w-full object-contain bg-black"
                 />
               )}
             </div>
