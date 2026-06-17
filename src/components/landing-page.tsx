@@ -147,10 +147,6 @@ export function LandingPage({ onVerified }: { onVerified: () => void }) {
           </div>
         </section>
       </main>
-
-      <footer className="py-12 px-6 text-center text-stone-400 text-xs font-medium tracking-widest uppercase">
-        WIP // {new Date().getFullYear()}
-      </footer>
     </div>
   )
 }
