@@ -79,6 +79,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             <MediaGrid
               mediaUrls={item.media_urls!}
               className="absolute inset-0 w-full h-full rounded-none"
+              capturedAt={item.created_at}
             />
 
             {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
