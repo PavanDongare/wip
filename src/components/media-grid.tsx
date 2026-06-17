@@ -79,11 +79,6 @@ export function MediaGrid({ mediaUrls, className, capturedAt }: MediaGridProps) 
   if (isSingle) {
     return (
       <div className={cn('relative rounded-2xl overflow-hidden bg-muted', className || 'h-40 w-40 shrink-0')}>
-        {capturedLabel && (
-          <div className="absolute left-3 top-3 z-20 bg-yellow-300 text-stone-900 border-2 border-stone-900 px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
-            {capturedLabel}
-          </div>
-        )}
         <Thumbnail url={mediaUrls[0]} overlayLabel={capturedLabel} />
       </div>
     )
@@ -92,11 +87,6 @@ export function MediaGrid({ mediaUrls, className, capturedAt }: MediaGridProps) 
   // Multiple images: horizontal scrollable strip
   return (
     <div className={cn('relative flex gap-1.5 overflow-x-auto pb-2', className)}>
-      {capturedLabel && (
-        <div className="absolute left-2 top-2 z-20 bg-yellow-300 text-stone-900 border-2 border-stone-900 px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
-          {capturedLabel}
-        </div>
-      )}
       {mediaUrls.map((url, index) => (
         <div
           key={index}

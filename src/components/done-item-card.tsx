@@ -105,8 +105,8 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
                   {item.content}
                 </p>
               )}
-              <div className="text-[10px] text-white/70 font-mono mt-3 uppercase tracking-wider">
-                Logged {timeAgo}
+              <div className="mt-3 text-[10px] font-mono uppercase tracking-wider text-yellow-200/90">
+                {timeAgo}
               </div>
             </div>
           </div>
