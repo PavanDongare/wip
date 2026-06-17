@@ -42,8 +42,10 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
 
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
   const createdAt = new Date(item.created_at)
-  const photoDay = format(createdAt, 'd MMM').toUpperCase()
-  const photoYear = format(createdAt, 'yyyy')
+  const photoWeekday = format(createdAt, 'EEE').toUpperCase()
+  const photoDay = format(createdAt, 'do')
+  const photoMonthYear = format(createdAt, 'MMM yy').toUpperCase()
+  const photoTime = format(createdAt, 'h:mm a')
   const hasMedia = item.media_urls && item.media_urls.length > 0
   const multiMedia = item.media_urls && item.media_urls.length > 1
 
@@ -88,13 +90,24 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
 
-            <div className="absolute top-4 left-4 z-20 min-w-20 rotate-[-3deg] border-4 border-stone-900 bg-yellow-300 px-3 py-2 text-stone-900 shadow-[5px_5px_0px_rgba(0,0,0,1)]">
-              <div className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-stone-900 bg-stone-900 shadow-[1px_1px_0px_rgba(0,0,0,0.4)]" />
-              <div className="font-mono text-[10px] font-black uppercase leading-none tracking-widest">
-                {photoDay}
+            <div className="absolute top-4 left-4 z-20 w-[92px] rotate-[-3deg] border-4 border-stone-900 bg-white text-stone-900 shadow-[6px_6px_0px_rgba(0,0,0,1)]">
+              <div className="flex h-5 items-center justify-center border-b-4 border-stone-900 bg-yellow-300">
+                <div className="h-3 w-3 rounded-full border-2 border-stone-900 bg-white" />
               </div>
-              <div className="mt-1 font-mono text-[18px] font-black leading-none tracking-tight">
-                {photoYear}
+              <div className="relative px-2 pb-2 pt-1 text-center">
+                <div className="font-mono text-[9px] font-black uppercase leading-none tracking-widest">
+                  {photoWeekday}
+                </div>
+                <div className="mt-1 font-mono text-[25px] font-black leading-none tracking-tight">
+                  {photoDay}
+                </div>
+                <div className="mt-0.5 font-mono text-[10px] font-black uppercase leading-none tracking-wider">
+                  {photoMonthYear}
+                </div>
+                <div className="mt-1 border-t-2 border-stone-900 pt-1 font-mono text-[9px] font-black uppercase leading-none tracking-tight">
+                  {photoTime}
+                </div>
+                <div className="absolute bottom-0 right-0 h-4 w-4 border-l-2 border-t-2 border-stone-900 bg-yellow-100 shadow-[-1px_-1px_0px_rgba(0,0,0,0.15)]" />
               </div>
             </div>
 

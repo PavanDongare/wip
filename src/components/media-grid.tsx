@@ -31,7 +31,7 @@ function formatCapturedAt(capturedAt?: string) {
   if (!capturedAt) return null
   const date = new Date(capturedAt)
   if (Number.isNaN(date.getTime())) return null
-  return format(date, 'd MMM yy')
+  return format(date, 'EEE do MMM yy · h:mm a').toUpperCase()
 }
 
 function Thumbnail({ url, overlayLabel }: { url: string; overlayLabel?: string | null }) {
@@ -127,8 +127,10 @@ function ExpandedImage({
           <div className="relative z-10 w-full max-w-6xl px-4 py-6 md:px-10 md:py-10">
             <div className="relative overflow-hidden rounded-[1.25rem] border-4 border-stone-900 bg-black shadow-[12px_12px_0px_rgba(0,0,0,0.75)]">
               {overlayLabel && (
-                <div className="absolute left-4 top-4 z-20 bg-yellow-300 text-stone-900 border-2 border-stone-900 px-3 py-1 font-mono text-[11px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
+                <div className="absolute left-4 top-4 z-20 max-w-[calc(100%-2rem)] rotate-[-2deg] border-4 border-stone-900 bg-white px-3 py-2 font-mono text-[10px] font-black uppercase tracking-wider text-stone-900 shadow-[5px_5px_0px_rgba(0,0,0,1)]">
+                  <div className="absolute -top-2 left-6 h-4 w-4 rounded-full border-2 border-stone-900 bg-yellow-300" />
                   {overlayLabel}
+                  <div className="absolute bottom-0 right-0 h-3 w-3 border-l-2 border-t-2 border-stone-900 bg-yellow-100" />
                 </div>
               )}
 
