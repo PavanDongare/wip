@@ -41,7 +41,9 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
   }
 
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
-  const photoDate = format(new Date(item.created_at), 'd MMM yy')
+  const createdAt = new Date(item.created_at)
+  const photoDay = format(createdAt, 'd MMM').toUpperCase()
+  const photoYear = format(createdAt, 'yyyy')
   const hasMedia = item.media_urls && item.media_urls.length > 0
   const multiMedia = item.media_urls && item.media_urls.length > 1
 
@@ -86,8 +88,14 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
 
-            <div className="absolute top-4 left-4 z-20 bg-yellow-300 text-[#2349d7] border-2 border-[#2349d7] px-3 py-1 font-mono text-[11px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(35,73,215,0.3)] rotate-[-2deg]">
-              {photoDate}
+            <div className="absolute top-4 left-4 z-20 min-w-20 rotate-[-3deg] border-4 border-stone-900 bg-yellow-300 px-3 py-2 text-stone-900 shadow-[5px_5px_0px_rgba(0,0,0,1)]">
+              <div className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-stone-900 bg-stone-900 shadow-[1px_1px_0px_rgba(0,0,0,0.4)]" />
+              <div className="font-mono text-[10px] font-black uppercase leading-none tracking-widest">
+                {photoDay}
+              </div>
+              <div className="mt-1 font-mono text-[18px] font-black leading-none tracking-tight">
+                {photoYear}
+              </div>
             </div>
 
             {/* Actions Menu (Top-right corner, styled as a brutalist button badge) */}
@@ -106,7 +114,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
                   {item.content}
                 </p>
               )}
-              <div className="mt-3 inline-flex items-center gap-2 rounded-[0.7rem] border-2 border-[#2349d7] bg-yellow-300 px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider text-[#2349d7] shadow-[3px_3px_0px_rgba(35,73,215,0.24)] rotate-[-1.5deg]">
+              <div className="mt-3 inline-flex rotate-[-1.5deg] items-center gap-2 border-2 border-stone-900 bg-yellow-300 px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider text-stone-900 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
                 <span className="text-sm leading-none" aria-hidden>
                   ✓
                 </span>
