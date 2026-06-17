@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, memo } from 'react'
-import { formatDistanceToNow } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import { MoreVertical, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,6 +41,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
   }
 
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
+  const photoDate = format(new Date(item.created_at), 'd MMM yy')
   const hasMedia = item.media_urls && item.media_urls.length > 0
   const multiMedia = item.media_urls && item.media_urls.length > 1
 
@@ -85,6 +86,10 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
             {/* Dark gradient scrim (always active to ensure yellow/white text stands out on any image) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
 
+            <div className="absolute top-4 left-4 z-20 bg-yellow-300 text-[#2349d7] border-2 border-[#2349d7] px-3 py-1 font-mono text-[11px] font-black uppercase tracking-wider shadow-[3px_3px_0px_rgba(35,73,215,0.3)] rotate-[-2deg]">
+              {photoDate}
+            </div>
+
             {/* Actions Menu (Top-right corner, styled as a brutalist button badge) */}
             <div className="absolute top-4 right-4 z-20 bg-white border-2 border-stone-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all">
               <ItemMenu 
@@ -101,7 +106,7 @@ export const DoneItemCard = memo(function DoneItemCard({ item, onDelete, onUpdat
                   {item.content}
                 </p>
               )}
-              <div className="mt-3 inline-flex items-center gap-2 rounded-md border-2 border-[#2349d7] bg-[#eef3ff] px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider text-[#2349d7] shadow-[3px_3px_0px_rgba(35,73,215,0.18)]">
+              <div className="mt-3 inline-flex items-center gap-2 rounded-[0.7rem] border-2 border-[#2349d7] bg-yellow-300 px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider text-[#2349d7] shadow-[3px_3px_0px_rgba(35,73,215,0.24)] rotate-[-1.5deg]">
                 <span className="text-sm leading-none" aria-hidden>
                   ✓
                 </span>
